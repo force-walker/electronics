@@ -1,0 +1,50 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f1115;
+  color: #e8ecf2;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 320px;
+  gap: 12px;
+  padding: 12px;
+}
+
+.panel {
+  background: #171b22;
+  border: 1px solid #2b3340;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+h1, h2, h3, p { margin: 0 0 8px; }
+button, select {
+  background: #263140;
+  color: #e8ecf2;
+  border: 1px solid #3d4f66;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed #344258;
+  padding: 6px 0;
+}
+
+.small { opacity: 0.82; font-size: 12px; }
+
+.board {
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+}
+
+.stage-ok { color: #7ce38b; }
+.stage-ng { color: #ff8b8b; }

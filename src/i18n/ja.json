@@ -1,0 +1,21 @@
+{
+  "app.title": "回路パズルラボ (MVP)",
+  "ui.lang": "言語",
+  "ui.reset": "リセット",
+  "ui.hint": "ヒント",
+  "ui.toolbox": "部品",
+  "ui.stage": "ステージ",
+  "ui.condition": "クリア条件",
+  "metric.voltage": "電圧",
+  "metric.current": "電流",
+  "metric.resistance": "合成抵抗",
+  "metric.power": "電力",
+  "stage1.title": "電圧・電流・抵抗",
+  "stage1.desc": "VとRを調整してIの変化を確認しよう",
+  "stage2.title": "オームの法則",
+  "stage2.desc": "目標電流に近づく抵抗を選ぼう",
+  "stage3.title": "直列・並列",
+  "stage3.desc": "配線方法で合成抵抗を目標範囲へ",
+  "status.clear": "クリア",
+  "status.notyet": "未達成"
+}

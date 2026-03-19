@@ -1,0 +1,21 @@
+{
+  "app.title": "Circuit Puzzle Lab (MVP)",
+  "ui.lang": "Language",
+  "ui.reset": "Reset",
+  "ui.hint": "Hint",
+  "ui.toolbox": "Toolbox",
+  "ui.stage": "Stage",
+  "ui.condition": "Clear Condition",
+  "metric.voltage": "Voltage",
+  "metric.current": "Current",
+  "metric.resistance": "Total Resistance",
+  "metric.power": "Power",
+  "stage1.title": "Voltage, Current, Resistance",
+  "stage1.desc": "Adjust V and R and observe I",
+  "stage2.title": "Ohm's Law",
+  "stage2.desc": "Choose resistance to match target current",
+  "stage3.title": "Series and Parallel",
+  "stage3.desc": "Change wiring to fit target resistance",
+  "status.clear": "Cleared",
+  "status.notyet": "Not cleared"
+}
