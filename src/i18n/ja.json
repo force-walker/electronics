@@ -17,5 +17,6 @@
   "stage3.title": "直列・並列",
   "stage3.desc": "配線方法で合成抵抗を目標範囲へ",
   "status.clear": "クリア",
-  "status.notyet": "未達成"
+  "status.notyet": "未達成",
+  "status.short": "ショート回路を検出（電池の＋と−がワイヤのみで直結）"
 }

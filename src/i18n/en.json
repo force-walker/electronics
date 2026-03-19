@@ -17,5 +17,6 @@
   "stage3.title": "Series and Parallel",
   "stage3.desc": "Change wiring to fit target resistance",
   "status.clear": "Cleared",
-  "status.notyet": "Not cleared"
+  "status.notyet": "Not cleared",
+  "status.short": "Short circuit detected (battery + and - connected by wire only)"
 }
