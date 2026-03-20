@@ -1,5 +1,7 @@
 :root {
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 body {
@@ -23,12 +25,18 @@ body {
 }
 
 h1, h2, h3, p { margin: 0 0 8px; }
+h1 { font-size: 1.4rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.1rem; }
+button, select, input {
+  font-size: 0.98rem;
+}
 button, select {
   background: #263140;
   color: #e8ecf2;
   border: 1px solid #3d4f66;
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 7px 11px;
 }
 
 .metric {
@@ -38,7 +46,7 @@ button, select {
   padding: 6px 0;
 }
 
-.small { opacity: 0.82; font-size: 12px; }
+.small { opacity: 0.9; font-size: 14px; }
 
 .board {
   min-height: 340px;

@@ -110,17 +110,21 @@ export function CircuitBoard() {
           onDragOver={onDragOver}
           onDrop={onDrop}
         >
-          {circuit.components.map((c) => {
+          {circuit.components.map((c, idx) => {
             const p1 = nodePos[c.from];
             const p2 = nodePos[c.to];
             if (!p1 || !p2) return null;
             const mx = (p1.x + p2.x) / 2;
             const my = (p1.y + p2.y) / 2;
+            const label = `${c.id}:${c.type === 'resistor' && 'resistance' in c ? `${Math.round(c.resistance)}Ω` : c.type}`;
+            const labelY = my - 12 - (idx % 3) * 16;
+            const labelW = Math.max(64, label.length * 6.8);
             return (
               <g key={c.id}>
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={lineColor(c.type)} strokeWidth={4} />
-                <text x={mx} y={my - 8} fill="#9fb3c8" fontSize={12} textAnchor="middle">
-                  {c.id}:{c.type === 'resistor' && 'resistance' in c ? `${Math.round(c.resistance)}Ω` : c.type}
+                <rect x={mx - labelW / 2 - 4} y={labelY - 12} width={labelW + 8} height={16} rx={4} fill="#0b1220cc" />
+                <text x={mx} y={labelY} fill="#c5d5e8" fontSize={13} textAnchor="middle">
+                  {label}
                 </text>
 
                 {(c.type === 'resistor' || c.type === 'wire') && (
@@ -190,7 +194,7 @@ export function CircuitBoard() {
                 style={{ cursor: 'pointer' }}
               >
                 <circle cx={p.x} cy={p.y} r={14} fill={wireStart === id ? '#7ce38b' : '#26384f'} stroke="#5c7596" />
-                <text x={p.x} y={p.y + 4} fill="#dbe8f7" fontSize={11} textAnchor="middle">
+                <text x={p.x} y={p.y + 4} fill="#dbe8f7" fontSize={12} textAnchor="middle">
                   {id}
                 </text>
               </g>
