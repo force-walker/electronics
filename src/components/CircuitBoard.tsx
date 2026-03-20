@@ -1,6 +1,6 @@
-import { useMemo, useState, type MouseEventHandler } from 'react';
+import { useMemo, useState, type DragEventHandler, type MouseEventHandler } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import type { NodeId } from '../types/circuit';
+import type { ComponentType, NodeId } from '../types/circuit';
 
 type DragTerminal = { id: string; terminal: 'from' | 'to' } | null;
 
@@ -18,11 +18,28 @@ function lineColor(type: string) {
   return '#c3cad5';
 }
 
+function nearestTwoNodes(x: number, y: number, nodes: NodeId[]): [NodeId, NodeId] | null {
+  const list = nodes
+    .map((id) => {
+      const p = nodePos[id];
+      if (!p) return null;
+      const d = Math.hypot(p.x - x, p.y - y);
+      return { id, d };
+    })
+    .filter((v): v is { id: NodeId; d: number } => !!v)
+    .sort((a, b) => a.d - b.d);
+
+  if (list.length < 2) return null;
+  return [list[0].id, list[1].id];
+}
+
 export function CircuitBoard() {
-  const { stageIndex, circuit, setResistorValue, updateComponentTerminal, addWire } = useGameStore();
+  const { stageIndex, circuit, setResistorValue, updateComponentTerminal, addWire, addComponentBetween } =
+    useGameStore();
   const [dragTerminal, setDragTerminal] = useState<DragTerminal>(null);
   const [wireStart, setWireStart] = useState<NodeId | null>(null);
   const [mouse, setMouse] = useState<{ x: number; y: number } | null>(null);
+  const [isDropTarget, setIsDropTarget] = useState(false);
 
   const resistors = useMemo(() => circuit.components.filter((c) => c.type === 'resistor'), [circuit.components]);
 
@@ -46,23 +63,52 @@ export function CircuitBoard() {
     }
   };
 
+  const onDragOver: DragEventHandler<SVGSVGElement> = (e) => {
+    if (e.dataTransfer.types.includes('application/x-electronics-part')) {
+      e.preventDefault();
+      setIsDropTarget(true);
+    }
+  };
+
+  const onDrop: DragEventHandler<SVGSVGElement> = (e) => {
+    const part = e.dataTransfer.getData('application/x-electronics-part') as ComponentType;
+    if (!part) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 560;
+    const y = ((e.clientY - rect.top) / rect.height) * 320;
+    const pair = nearestTwoNodes(x, y, circuit.nodes);
+    if (pair) addComponentBetween(part, pair[0], pair[1]);
+
+    setIsDropTarget(false);
+  };
+
   return (
     <div className="panel board">
       <div style={{ width: '100%', maxWidth: 640 }}>
         <h3>Board (Drag Wiring)</h3>
-        <p className="small">
-          小円をドラッグしてノードへ接続変更。Stage3はノード→ノードをドラッグしてWire追加。
-        </p>
+        <p className="small">小円をドラッグしてノードへ接続変更。部品ボタンを盤面へドロップして追加。</p>
 
         <svg
           width="100%"
           viewBox="0 0 560 320"
-          style={{ background: '#111722', borderRadius: 8, marginTop: 8 }}
+          style={{
+            background: isDropTarget ? '#152133' : '#111722',
+            borderRadius: 8,
+            marginTop: 8,
+            outline: isDropTarget ? '2px dashed #7ce38b' : 'none'
+          }}
           onMouseMove={onSvgMove}
           onMouseUp={() => {
             setDragTerminal(null);
             setWireStart(null);
           }}
+          onDragEnter={(e) => {
+            if (e.dataTransfer.types.includes('application/x-electronics-part')) setIsDropTarget(true);
+          }}
+          onDragLeave={() => setIsDropTarget(false)}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
         >
           {circuit.components.map((c) => {
             const p1 = nodePos[c.from];
@@ -113,17 +159,7 @@ export function CircuitBoard() {
             const startNode = dragTerminal.terminal === 'from' ? comp.to : comp.from;
             const p = nodePos[startNode];
             if (!p) return null;
-            return (
-              <line
-                x1={p.x}
-                y1={p.y}
-                x2={mouse.x}
-                y2={mouse.y}
-                stroke="#ff8b8b"
-                strokeWidth={3}
-                strokeDasharray="6 4"
-              />
-            );
+            return <line x1={p.x} y1={p.y} x2={mouse.x} y2={mouse.y} stroke="#ff8b8b" strokeWidth={3} strokeDasharray="6 4" />;
           })()}
 
           {wireStart && mouse && (

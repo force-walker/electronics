@@ -11,11 +11,19 @@ export function Toolbox() {
       <h3>{t(lang, 'ui.toolbox')}</h3>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         {stage.toolbox.map((part) => (
-          <button key={part} onClick={() => addComponent(part)}>
+          <button
+            key={part}
+            draggable
+            title="Drag to board"
+            onDragStart={(e) => e.dataTransfer.setData('application/x-electronics-part', part)}
+            onClick={() => addComponent(part)}
+          >
             + {part}
           </button>
         ))}
       </div>
+
+      <p className="small">部品をドラッグしてBoardにドロップでも追加できます</p>
 
       <p className="small">Components</p>
       <div style={{ display: 'grid', gap: 6 }}>

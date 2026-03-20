@@ -18,6 +18,7 @@ interface GameState {
   updateComponentTerminal: (id: string, terminal: 'from' | 'to', node: NodeId) => void;
   addWire: (from: NodeId, to: NodeId) => void;
   addComponent: (type: ComponentType) => void;
+  addComponentBetween: (type: ComponentType, from: NodeId, to: NodeId) => void;
   removeComponent: (id: string) => void;
 }
 
@@ -31,6 +32,20 @@ function defaultNodePair(nodes: NodeId[]): { from: NodeId; to: NodeId } {
   const from = nodes[0] ?? 'n1';
   const to = nodes[1] ?? from;
   return { from, to };
+}
+
+function makeComponent(type: ComponentType, from: NodeId, to: NodeId, existing: Component[]): Component | null {
+  const id = `${type[0]}${Date.now().toString(36)}${Math.floor(Math.random() * 100).toString(36)}`;
+
+  if (type === 'resistor') return { id, type: 'resistor', from, to, resistance: 220 };
+  if (type === 'wire') return { id, type: 'wire', from, to, resistance: 0.0001 };
+  if (type === 'led') return { id, type: 'led', from, to, forwardVoltage: 2.0 };
+  if (type === 'battery') {
+    const batteryCount = existing.filter((c) => c.type === 'battery').length;
+    if (batteryCount > 0) return null;
+    return { id, type: 'battery', from, to, voltage: 9 };
+  }
+  return null;
 }
 
 export const useGameStore = create<GameState>()(
@@ -74,9 +89,8 @@ export const useGameStore = create<GameState>()(
       addWire: (from, to) => {
         if (from === to) return;
         const next = structuredClone(get().circuit);
-        const id = `w${Date.now().toString(36)}`;
         const wire: Component = {
-          id,
+          id: `w${Date.now().toString(36)}`,
           type: 'wire',
           from,
           to,
@@ -88,21 +102,15 @@ export const useGameStore = create<GameState>()(
       addComponent: (type) => {
         const next = structuredClone(get().circuit);
         const { from, to } = defaultNodePair(next.nodes);
-        const id = `${type[0]}${Date.now().toString(36)}`;
-
-        let component: Component | null = null;
-        if (type === 'resistor') {
-          component = { id, type: 'resistor', from, to, resistance: 220 };
-        } else if (type === 'wire') {
-          component = { id, type: 'wire', from, to, resistance: 0.0001 };
-        } else if (type === 'led') {
-          component = { id, type: 'led', from, to, forwardVoltage: 2.0 };
-        } else if (type === 'battery') {
-          const batteryCount = next.components.filter((c) => c.type === 'battery').length;
-          if (batteryCount > 0) return;
-          component = { id, type: 'battery', from, to, voltage: 9 };
-        }
-
+        const component = makeComponent(type, from, to, next.components);
+        if (!component) return;
+        next.components.push(component);
+        set({ circuit: next });
+      },
+      addComponentBetween: (type, from, to) => {
+        if (from === to) return;
+        const next = structuredClone(get().circuit);
+        const component = makeComponent(type, from, to, next.components);
         if (!component) return;
         next.components.push(component);
         set({ circuit: next });
