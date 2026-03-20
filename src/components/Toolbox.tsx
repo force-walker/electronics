@@ -15,7 +15,11 @@ export function Toolbox() {
             key={part}
             draggable
             title="Drag to board"
-            onDragStart={(e) => e.dataTransfer.setData('application/x-electronics-part', part)}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('application/x-electronics-part', part);
+              e.dataTransfer.setData('text/plain', part);
+              e.dataTransfer.effectAllowed = 'copy';
+            }}
             onClick={() => addComponent(part)}
           >
             + {part}

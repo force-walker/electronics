@@ -37,6 +37,7 @@ export function CircuitBoard() {
   const { stageIndex, circuit, setResistorValue, updateComponentTerminal, addWire, addComponentBetween } =
     useGameStore();
   const [dragTerminal, setDragTerminal] = useState<DragTerminal>(null);
+  const [pickTerminal, setPickTerminal] = useState<DragTerminal>(null);
   const [wireStart, setWireStart] = useState<NodeId | null>(null);
   const [mouse, setMouse] = useState<{ x: number; y: number } | null>(null);
   const [isDropTarget, setIsDropTarget] = useState(false);
@@ -51,9 +52,11 @@ export function CircuitBoard() {
   };
 
   const onNodeMouseUp = (node: NodeId) => {
-    if (dragTerminal) {
-      updateComponentTerminal(dragTerminal.id, dragTerminal.terminal, node);
+    const active = dragTerminal ?? pickTerminal;
+    if (active) {
+      updateComponentTerminal(active.id, active.terminal, node);
       setDragTerminal(null);
+      setPickTerminal(null);
       return;
     }
     if (stageIndex === 2 && wireStart) {
@@ -64,14 +67,18 @@ export function CircuitBoard() {
   };
 
   const onDragOver: DragEventHandler<SVGSVGElement> = (e) => {
-    if (e.dataTransfer.types.includes('application/x-electronics-part')) {
+    if (
+      e.dataTransfer.types.includes('application/x-electronics-part') ||
+      e.dataTransfer.types.includes('text/plain')
+    ) {
       e.preventDefault();
       setIsDropTarget(true);
     }
   };
 
   const onDrop: DragEventHandler<SVGSVGElement> = (e) => {
-    const part = e.dataTransfer.getData('application/x-electronics-part') as ComponentType;
+    const part = (e.dataTransfer.getData('application/x-electronics-part') ||
+      e.dataTransfer.getData('text/plain')) as ComponentType;
     if (!part) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
@@ -87,7 +94,7 @@ export function CircuitBoard() {
     <div className="panel board">
       <div style={{ width: '100%', maxWidth: 640 }}>
         <h3>Board (Drag Wiring)</h3>
-        <p className="small">小円をドラッグしてノードへ接続変更。部品ボタンを盤面へドロップして追加。</p>
+        <p className="small">小円をドラッグ（または小円クリック→ノードクリック）で接続変更。部品ボタンは盤面へドロップで追加。</p>
 
         <svg
           width="100%"
@@ -104,7 +111,11 @@ export function CircuitBoard() {
             setWireStart(null);
           }}
           onDragEnter={(e) => {
-            if (e.dataTransfer.types.includes('application/x-electronics-part')) setIsDropTarget(true);
+            if (
+              e.dataTransfer.types.includes('application/x-electronics-part') ||
+              e.dataTransfer.types.includes('text/plain')
+            )
+              setIsDropTarget(true);
           }}
           onDragLeave={() => setIsDropTarget(false)}
           onDragOver={onDragOver}
@@ -127,32 +138,48 @@ export function CircuitBoard() {
                   {label}
                 </text>
 
-                {(c.type === 'resistor' || c.type === 'wire') && (
-                  <>
-                    <circle
-                      cx={p1.x}
-                      cy={p1.y}
-                      r={6}
-                      fill={dragTerminal?.id === c.id && dragTerminal.terminal === 'from' ? '#ff8b8b' : '#ffffff'}
-                      style={{ cursor: 'grab' }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        setDragTerminal({ id: c.id, terminal: 'from' });
-                      }}
-                    />
-                    <circle
-                      cx={p2.x}
-                      cy={p2.y}
-                      r={6}
-                      fill={dragTerminal?.id === c.id && dragTerminal.terminal === 'to' ? '#ff8b8b' : '#ffffff'}
-                      style={{ cursor: 'grab' }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        setDragTerminal({ id: c.id, terminal: 'to' });
-                      }}
-                    />
-                  </>
-                )}
+                <>
+                  <circle
+                    cx={p1.x}
+                    cy={p1.y}
+                    r={6}
+                    fill={
+                      (dragTerminal?.id === c.id && dragTerminal.terminal === 'from') ||
+                      (pickTerminal?.id === c.id && pickTerminal.terminal === 'from')
+                        ? '#ff8b8b'
+                        : '#ffffff'
+                    }
+                    style={{ cursor: 'grab' }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      setDragTerminal({ id: c.id, terminal: 'from' });
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPickTerminal({ id: c.id, terminal: 'from' });
+                    }}
+                  />
+                  <circle
+                    cx={p2.x}
+                    cy={p2.y}
+                    r={6}
+                    fill={
+                      (dragTerminal?.id === c.id && dragTerminal.terminal === 'to') ||
+                      (pickTerminal?.id === c.id && pickTerminal.terminal === 'to')
+                        ? '#ff8b8b'
+                        : '#ffffff'
+                    }
+                    style={{ cursor: 'grab' }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      setDragTerminal({ id: c.id, terminal: 'to' });
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPickTerminal({ id: c.id, terminal: 'to' });
+                    }}
+                  />
+                </>
               </g>
             );
           })}
