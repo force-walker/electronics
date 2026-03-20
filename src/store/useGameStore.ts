@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CircuitState, Component, NodeId } from '../types/circuit';
+import type { CircuitState, Component, ComponentType, NodeId } from '../types/circuit';
 import type { Stage } from '../types/stage';
 import { stages } from '../stages';
 
@@ -17,12 +17,20 @@ interface GameState {
   setResistorValue: (resistance: number, resistorId?: string) => void;
   updateComponentTerminal: (id: string, terminal: 'from' | 'to', node: NodeId) => void;
   addWire: (from: NodeId, to: NodeId) => void;
+  addComponent: (type: ComponentType) => void;
+  removeComponent: (id: string) => void;
 }
 
 const first = stages[0];
 
 function cloneStageCircuit(stage: Stage): CircuitState {
   return structuredClone(stage.starterCircuit);
+}
+
+function defaultNodePair(nodes: NodeId[]): { from: NodeId; to: NodeId } {
+  const from = nodes[0] ?? 'n1';
+  const to = nodes[1] ?? from;
+  return { from, to };
 }
 
 export const useGameStore = create<GameState>()(
@@ -75,6 +83,35 @@ export const useGameStore = create<GameState>()(
           resistance: 0.0001
         };
         next.components.push(wire);
+        set({ circuit: next });
+      },
+      addComponent: (type) => {
+        const next = structuredClone(get().circuit);
+        const { from, to } = defaultNodePair(next.nodes);
+        const id = `${type[0]}${Date.now().toString(36)}`;
+
+        let component: Component | null = null;
+        if (type === 'resistor') {
+          component = { id, type: 'resistor', from, to, resistance: 220 };
+        } else if (type === 'wire') {
+          component = { id, type: 'wire', from, to, resistance: 0.0001 };
+        } else if (type === 'led') {
+          component = { id, type: 'led', from, to, forwardVoltage: 2.0 };
+        } else if (type === 'battery') {
+          const batteryCount = next.components.filter((c) => c.type === 'battery').length;
+          if (batteryCount > 0) return;
+          component = { id, type: 'battery', from, to, voltage: 9 };
+        }
+
+        if (!component) return;
+        next.components.push(component);
+        set({ circuit: next });
+      },
+      removeComponent: (id) => {
+        const next = structuredClone(get().circuit);
+        const target = next.components.find((c) => c.id === id);
+        if (!target || target.type === 'battery') return;
+        next.components = next.components.filter((c) => c.id !== id);
         set({ circuit: next });
       }
     }),

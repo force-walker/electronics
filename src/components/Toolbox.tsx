@@ -3,18 +3,43 @@ import { useGameStore } from '../store/useGameStore';
 import { t } from '../i18n/useI18n';
 
 export function Toolbox() {
-  const { lang, stageIndex } = useGameStore();
+  const { lang, stageIndex, circuit, addComponent, removeComponent } = useGameStore();
   const stage = stages[stageIndex];
 
   return (
     <div className="panel">
       <h3>{t(lang, 'ui.toolbox')}</h3>
-      <ul>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         {stage.toolbox.map((part) => (
-          <li key={part}>{part}</li>
+          <button key={part} onClick={() => addComponent(part)}>
+            + {part}
+          </button>
         ))}
-      </ul>
-      <p className="small">MVP: 配置UIは次フェーズで拡張</p>
+      </div>
+
+      <p className="small">Components</p>
+      <div style={{ display: 'grid', gap: 6 }}>
+        {circuit.components.map((c) => (
+          <div
+            key={c.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              border: '1px solid #344258',
+              borderRadius: 8,
+              padding: '4px 6px'
+            }}
+          >
+            <span className="small">
+              {c.id} ({c.type}) {c.from}→{c.to}
+            </span>
+            <button disabled={c.type === 'battery'} onClick={() => removeComponent(c.id)}>
+              -
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
